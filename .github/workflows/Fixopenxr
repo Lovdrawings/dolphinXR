@@ -1,0 +1,26 @@
+name: Build APK
+on: [workflow_dispatch]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+          fetch-depth: 0
+      - name: Fix submodules
+        run: |
+          git submodule sync --recursive
+          git -c protocol.version=2 submodule update --init --recursive --depth=1 || true
+          cd Externals/OpenXR
+          git fetch origin
+          git checkout master || git checkout main
+          cd ../..
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Build APK
+        run: |
+          cd Source/Android
+          chmod +x gradlew
